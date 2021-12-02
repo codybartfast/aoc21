@@ -3,12 +3,12 @@ const fs = require('fs');
 fs.readFile('day01.txt', 'utf-8', (err, data) => {
     if (err) throw err;
     let lines = data.trim().split('\n');
-    sonarSweep1(lines);
-    sonarSweep2(lines);
+    let depths = lines.map(Number)
+    sonarSweep1(depths);
+    sonarSweep2(depths);
 });
 
-function sonarSweep1(lines){
-    let depths = lines.map(Number)
+function sonarSweep1(depths){
     console.log(countIncreases(depths));
 }
 
@@ -20,8 +20,7 @@ function countIncreases(depths){
     return increaseCount;
 }
 
-function sonarSweep2(lines){
-    let depths = lines.map(Number)
+function sonarSweep2(depths){
     let sliding = [];
     for(i = 2; i < depths.length; i++){
         sliding =
