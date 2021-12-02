@@ -1,3 +1,4 @@
+'use strict';
 const fs = require('fs');
 
 fs.readFile('day02.txt', 'utf-8', (err, input) => {
@@ -8,16 +9,16 @@ fs.readFile('day02.txt', 'utf-8', (err, input) => {
     dive2(data);
 });
 
-function parseLine(line){
+function parseLine(line) {
     let parts = line.split(' ');
-    return {direction: parts[0], distance: Number(parts[1])};
+    return { direction: parts[0], distance: Number(parts[1]) };
 }
 
-function dive1(data){
+function dive1(data) {
     let depth = 0, range = 0;
     data.forEach(instr => {
         let dist = instr.distance;
-        switch(instr.direction){
+        switch (instr.direction) {
             case 'forward':
                 range += dist;
                 break;
@@ -28,16 +29,18 @@ function dive1(data){
             case 'down':
                 depth += dist;
                 break;
+            default:
+                throw `Unexpected direction: ${instr.direction}`;
         }
     });
     console.log(depth * range);
 }
 
-function dive2(data){
-    let aim =0, depth = 0, range = 0;
+function dive2(data) {
+    let aim = 0, depth = 0, range = 0;
     data.forEach(instr => {
         let dist = instr.distance;
-        switch(instr.direction){
+        switch (instr.direction) {
             case 'forward':
                 range += dist;
                 depth += (dist * aim)
@@ -49,6 +52,8 @@ function dive2(data){
             case 'down':
                 aim += dist;
                 break;
+            default:
+                throw new Error(`Unexpected direction: ${instr.direction}`);
         }
     });
     console.log(depth * range);
