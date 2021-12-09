@@ -15,14 +15,21 @@ fs.readFile('day04.txt', 'utf-8', (err, input) => {
 });
 
 function giantSquid1(numbers, boards) {
+    let nBoards = boards.length;
+    let nWins = 0;
     numbers.forEach(number => {
         boards.forEach(board => {
             let idx = markNumber(board, number);
             if (idx >= 0) {
-                if(checkWinning(board, idx)){
-                    cl(board);
-                    cl(score(board, number))
-                    exit;
+                if (checkWinning(board, idx)) {
+                    nWins += 1;
+                    if (nWins === nBoards) {
+                        cl(nWins);
+                        cl(board);
+                        cl(score(board, number))
+                        exit;
+                    }
+                    board.fill(null);
                 }
             }
         });
@@ -48,16 +55,16 @@ function checkWinning(board, idx) {
 
     let colStart = idxCol
     let col = [];
-    for (let i = 0; i < nRow; i++){
+    for (let i = 0; i < nRow; i++) {
         col.push(board[(colStart + (i * nRow))]);
     }
 
     return row.every(sqr => sqr === null) || col.every(sqr => sqr === null);
 }
 
-function score(board, called){
+function score(board, called) {
     let sum =
-         board
+        board
             .filter(e => e !== null)
             .reduce((agg, n) => agg + n, 0);
     return sum * called;
