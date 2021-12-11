@@ -20,21 +20,15 @@ function giantSquid1(numbers, boards) {
     numbers.forEach(number => {
         boards.forEach(board => {
             let idx = markNumber(board, number);
-            if (idx >= 0) {
-                if (checkWinning(board, idx)) {
-                    nWins += 1;
-                    if (nWins === nBoards) {
-                        cl(nWins);
-                        cl(board);
-                        cl(score(board, number))
-                        exit;
-                    }
-                    board.fill(null);
+            if (idx >= 0 && completes(idx, board)) {
+                nWins += 1;
+                if (nWins == 1 || nWins === nBoards) {
+                    cl(score(board, number))
                 }
+                wipe(board);
             }
         });
     });
-    cl(boards[99]);
 }
 
 function markNumber(board, number) {
@@ -45,8 +39,7 @@ function markNumber(board, number) {
     return idx;
 }
 
-function checkWinning(board, idx) {
-    // cl(`Checking: ${idx}`);
+function completes(idx, board) {
     let idxCol = idx % nCol;
     let idxRow = (idx - idxCol) / nRow;
 
@@ -68,4 +61,8 @@ function score(board, called) {
             .filter(e => e !== null)
             .reduce((agg, n) => agg + n, 0);
     return sum * called;
+}
+
+function wipe(board) {
+    board.fill(null);
 }
