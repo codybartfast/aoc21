@@ -5,21 +5,33 @@ const cl = console.log;
 fs.readFile('day07.txt', 'utf-8', (err, input) => {
     if (err) throw err;
     let crabs = input.trim().split(',').map(Number);
-    cl(theTreacheryOfWhales(crabs));
+    cl(theTreacheryOfWhales(crabs, false));
+    cl(theTreacheryOfWhales(crabs, true));
 });
 
-function theTreacheryOfWhales(crabs) {
+function theTreacheryOfWhales(crabs, useCrabEngineering) {
+    let maxPosition = Math.max(...crabs);
+    let fTable = fuelTable(maxPosition, useCrabEngineering);
     let min = Infinity;
-    for(let i = 0; i < crabs.length; i++){
-        let f = fuel(crabs, i);
-        min = Math.min(min, f);
+    for (let horizPos = 0; horizPos <= maxPosition; horizPos++) {
+        let fuel = totalFuel(crabs, horizPos, fTable);
+        min = Math.min(min, fuel);
     }
-    return min
+    return min;
 }
 
-function fuel(crabs, x){
+function totalFuel(crabs, horzPos, fuelTable) {
     return crabs
-        .map(crab => crab - x)
-        .reduce((a, b) => a + Math.abs(b));
+        .map(crab => fuelTable[Math.abs(crab - horzPos)])
+        .reduce((a, b) => a + b);
 }
 
+function fuelTable(maxDist, useCrabEngineering) {
+    let size = maxDist + 1;
+    let table = new Array(size);
+    table[0] = 0;
+    for (let i = 1; i < size; i++) {
+        table[i] = useCrabEngineering ? table[i - 1] + i : i;
+    }
+    return table;
+}
