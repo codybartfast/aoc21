@@ -10,23 +10,30 @@ fs.readFile('day13.txt', 'utf-8', (err, input) => {
         let [axis, val] = ln.split(' ')[2].split('=');
         return [axis, Number(val)];
     });
-    cl(transparentOrigami(dots, folds));
+    cl(transparentOrigami1(dots, folds));
+    cl(transparentOrigami2(dots, folds));
 });
 
-function transparentOrigami(dots, folds) {
+function transparentOrigami1(dots, folds) {
     return applyFold(dots, folds[0]).length;
 }
 
-function applyFold(dots, fold) {
-    let [axis, line] = fold
-    let idx =
-        axis === 'x' ? 0 :
-            axis === 'y' ? 1 :
-                function () { throw 'which axis?' };
-    dots = dots.filter(dot => dot[idx] !== line)
-    dots
-        .filter(dot => dot[idx] > line)
-        .forEach(dot => dot[idx] = 2 * line - dot[idx]);
+function transparentOrigami2(dots, folds) {
+    let folded = folds.reduce(applyFold, dots);
+    let xLen = 1 + Math.max(...folded.map(([x, _]) => x));
+    let yLen = 1 + Math.max(...folded.map(([_, y]) => y));
+    let sheet = //new Array(maxY + 1).fill('0').map(el => 'blah')
+        (new Array(yLen)).fill(0)
+            .map(_ => new Array(xLen).fill(' '));
+    folded.forEach(([x, y]) => sheet[y][x] = '#');
+    return sheet.map(row => cl(row.join(''))).join('');
+}
+
+function applyFold(dots, [axis, line]) {
+    let dim = axis === 'x' ? 0 : 1;
+    dots = dots.filter(dot => dot[dim] !== line);
+    dots.filter(dot => dot[dim] > line)
+        .forEach(dot => dot[dim] = 2 * line - dot[dim]);
     return dedup(dots);
 }
 
