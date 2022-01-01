@@ -7,34 +7,52 @@ fs.readFile('day14.txt', 'utf-8', (err, input) => {
     let lines = input.trim().split(/\r?\n/);
     let template = lines[0];
     let insertions = new Map(lines.splice(2).map(ln => ln.split(' -> ')));
-    cl(extendedPolymerization(template, insertions));
+    cl(extendedPolymerization(template, insertions, 10));
+    cl(extendedPolymerization(template, insertions, 40));
 });
 
-function extendedPolymerization(template, insertions) {
-    let polymer = stringToPolymer(template);
-    for (let step = 0; step < 10; step++) {
+function extendedPolymerization(template, insertions, steps) {
+    return twoStageExtend(template, insertions, steps).lowHigh();
+}
+
+function twoStageExtend(template, insertions, steps) {
+    if (steps % 2 !== 0) throw "Even Stevens";
+    let halfSteps = steps / 2;
+    let demiStats = new Map();
+    for (let pair of insertions.keys()) {
+        demiStats.set(pair, getDemiStats(stringToPolymer(pair), insertions, halfSteps));
+    }
+    let demiPolymer = stringToPolymer(template);
+    for (let i = 0; i < halfSteps; i++) {
+        demiPolymer = extendPolymer(demiPolymer, insertions);
+    }
+    let stats = newStats();
+    for (let [l, r] of pairwise(demiPolymer)) {
+        stats.combine(demiStats.get(l + r));
+    }
+    stats.inc(template[0]);
+    return stats;
+}
+
+function getDemiStats(polymer, insertions, steps) {
+    let stats = newStats();
+    for (let i = 0; i < steps; i++) {
         polymer = extendPolymer(polymer, insertions);
     }
-    let [low, high] = lowHigh(polymer);
-    return high - low;
-}
-
-function lowHigh(polymer) {
-    let map = new Map();
+    let skippedFirst = false;
     for (let el of polymer) {
-        let current = map.get(el);
-        map.set(el, current ? current + 1 : 1);
+        if (skippedFirst) {
+            stats.inc(el);
+        }
+        else {
+            skippedFirst = true;
+        }
     }
-    let low = Infinity, high = -Infinity;
-    for (let value of map.values()) {
-        low = value < low ? value : low;
-        high = value > high ? value : high;
-    }
-    return [low, high];
+    return stats;
 }
 
-function* extendPolymer(polymer, insertions) {
-    yield* singles(withInsertions(insertions, pairwise(polymer)));
+function extendPolymer(polymer, insertions) {
+    return singles(withInsertions(insertions, pairwise(polymer)));
 }
 
 function* withInsertions(insertions, pairs) {
@@ -44,8 +62,7 @@ function* withInsertions(insertions, pairs) {
 }
 
 function insert(insertions, [l, r]) {
-    let sub = insertions.get(l + r);
-    return sub ? [l, sub, r] : [l, r];
+    return [l, insertions.get(l + r), r];
 }
 
 function* pairwise(polymer) {
@@ -67,6 +84,30 @@ function* singles(parts) {
         }
         yield* part.slice(1);
     }
+}
+
+function newStats(sourceMap) {
+    const stats = new Map(sourceMap);
+    stats.inc = function (el) {
+        let current = this.get(el);
+        this.set(el, current ? current + 1 : 1);
+    }
+    stats.combine = function (b) {
+        for (let el of b.keys()) {
+            let aVal = this.get(el);
+            let bVal = b.get(el);
+            this.set(el, aVal ? aVal + bVal : bVal);
+        }
+    }
+    stats.lowHigh = function () {
+        let low = Infinity, high = -Infinity;
+        for (let value of this.values()) {
+            low = value < low ? value : low;
+            high = value > high ? value : high;
+        }
+        return high - low;
+    }
+    return stats;
 }
 
 function* stringToPolymer(template) {
