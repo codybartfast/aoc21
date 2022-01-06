@@ -26,8 +26,8 @@ function toCave(grid) {
 }
 
 function chiton(cv) {
-    let positons = [start];
-    while ((positons = extendAll(cv, positons)).length > 0);
+    let modified = [start];
+    while ((modified = extendAll(cv, modified)).length);
     return info(cv, exit(cv)).pathRisk;
 }
 
