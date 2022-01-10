@@ -27,6 +27,14 @@ function snailfish2(numbers) {
     return max;
 }
 
+function magnitude(n) {
+    if (isRegularNumber(n)) {
+        return n;
+    }
+    let [left, right] = n;
+    return 3 * magnitude(left) + 2 * magnitude(right);
+}
+
 function add(a, b) {
     let n = [a, b];
     reduce(n);
@@ -40,14 +48,6 @@ function reduce(n) {
     while (split(n));
 }
 
-function magnitude(n) {
-    if (isRegularNumber(n)) {
-        return n;
-    }
-    let [left, right] = n;
-    return 3 * magnitude(left) + 2 * magnitude(right);
-}
-
 function split(pair) {
     function numToPair(rn) {
         let left = Math.floor(rn / 2);
@@ -56,7 +56,7 @@ function split(pair) {
     let [left, right] = pair;
     if (isRegularNumber(left)) {
         if (left > 9) {
-            setLeft(pair, numToPair(left));
+            pair[0] = numToPair(left);
             return true;
         }
     } else {
@@ -66,7 +66,7 @@ function split(pair) {
     }
     if (isRegularNumber(right)) {
         if (right > 9) {
-            setRight(pair, numToPair(right));
+            pair[1] = numToPair(right);
             return true;
         }
         return false;
@@ -81,10 +81,10 @@ function explode(n) {
     if (findResult) {
         let [explosive, parent] = findResult;
         distribute(explosive, n);
-        if (getLeft(parent) === explosive) {
-            setLeft(parent, 0);
+        if (parent[0] === explosive) {
+            parent[0] = 0;
         } else {
-            setRight(parent, 0);
+            parent[1] = 0;
         }
         return true;
     }
@@ -100,9 +100,17 @@ function findExplosive(n, parents = []) {
     }
     else {
         let parentsPlus = [].concat(parents, [n]);
-        return findExplosive(getLeft(n), parentsPlus)
-            || findExplosive(getRight(n), parentsPlus);
+        return findExplosive(n[0], parentsPlus)
+            || findExplosive(n[1], parentsPlus);
     }
+}
+
+function isPair(n) {
+    return Array.isArray(n);
+}
+
+function isRegularNumber(n) {
+    return !isPair(n);
 }
 
 function distribute(pair, root) {
@@ -113,8 +121,8 @@ function distribute(pair, root) {
         return leftPairs.concat([pair], rightPairs);
     }
     function updateLeft(n, pair) {
-        if (isRegularNumber(getLeft(pair))) {
-            setLeft(pair, getLeft(pair) + n);
+        if (isRegularNumber(pair[0])) {
+            pair[0] = pair[0] + n;
             return true;
         }
         else {
@@ -122,8 +130,8 @@ function distribute(pair, root) {
         }
     }
     function updateRight(n, pair) {
-        if (isRegularNumber(getRight(pair))) {
-            setRight(pair, getRight(pair) + n);
+        if (isRegularNumber(pair[1])) {
+            pair[1] = pair[1] + n;
             return true;
         }
         else {
@@ -146,28 +154,4 @@ function distribute(pair, root) {
             break;
         }
     }
-}
-
-function isPair(n) {
-    return Array.isArray(n);
-}
-
-function isRegularNumber(n) {
-    return !isPair(n);
-}
-
-function getLeft([left, _]) {
-    return left;
-}
-
-function setLeft(n, v) {
-    n[0] = v;
-}
-
-function getRight([_, right]) {
-    return right;
-}
-
-function setRight(n, v) {
-    n[1] = v;
 }
